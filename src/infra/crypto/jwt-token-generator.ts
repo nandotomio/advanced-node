@@ -7,8 +7,8 @@ export class JwtTokenGenerator implements TokenGenerator {
     private readonly secret: string
   ) {}
 
-  async generateToken (params: TokenGenerator.Params): Promise<TokenGenerator.Result> {
-    const expirationInSeconds = params.expirationInMs / 1000
-    return sign({ key: params.key }, this.secret, { expiresIn: expirationInSeconds })
+  async generateToken ({ key, expirationInMs }: TokenGenerator.Params): Promise<TokenGenerator.Result> {
+    const expirationInSeconds = expirationInMs / 1000
+    return sign({ key }, this.secret, { expiresIn: expirationInSeconds })
   }
 }
