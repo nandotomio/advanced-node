@@ -6,6 +6,8 @@ import nock from 'nock'
 
 describe('Facebook Api Integration Tests', () => {
   const facebookBaseUrl = 'https://graph.facebook.com'
+  let axiosClient: AxiosHttpClient
+  let sut: FacebookApi
 
   beforeAll(() => {
     nock(facebookBaseUrl, { allowUnmocked: true })
@@ -44,9 +46,12 @@ describe('Facebook Api Integration Tests', () => {
     nock.cleanAll()
   })
 
+  beforeEach(() => {
+    axiosClient = new AxiosHttpClient()
+    sut = new FacebookApi(axiosClient, env.facebookApi.clientId, env.facebookApi.clientSecret)
+  })
+
   it('should return a Facebook User if token is valid', async () => {
-    const axiosClient = new AxiosHttpClient()
-    const sut = new FacebookApi(axiosClient, env.facebookApi.clientId, env.facebookApi.clientSecret)
     const fbUser = await sut.loadUser({ token: 'any_token' })
     expect(fbUser).toEqual({
       facebookId: 'any_fb_id',
@@ -56,8 +61,13 @@ describe('Facebook Api Integration Tests', () => {
   })
 
   it('should return undefined if token is invalid', async () => {
-    const axiosClient = new AxiosHttpClient()
-    const sut = new FacebookApi(axiosClient, env.facebookApi.clientId, env.facebookApi.clientSecret)
+    nock(facebookBaseUrl, { allowUnmocked: true })
+      .get('/debug_token')
+      .query({
+        access_token: 'any_app_token',
+        input_token: 'invalid'
+      })
+      .reply(400)
     const fbUser = await sut.loadUser({ token: 'invalid' })
     expect(fbUser).toBeUndefined()
   })
