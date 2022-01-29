@@ -9,6 +9,7 @@
     "clean": "rimraf dist",
     "build": "npm run clean && tsc -p tsconfig-build.json",
     "start": "node dist/main",
+    "dev": "ts-node-dev --respawn --transpile-only --inspect=0.0.0.0:9229 src/main",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "test": "jest --passWithNoTests --no-cache --runInBand",
@@ -44,6 +45,7 @@
     "pg-mem": "^2.2.1",
     "supertest": "^6.2.2",
     "ts-jest": "^27.1.2",
+    "ts-node-dev": "^1.1.8",
     "typescript": "^4.5.4"
   },
   "engines": {
