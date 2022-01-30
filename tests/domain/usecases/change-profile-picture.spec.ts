@@ -1,14 +1,14 @@
 import { mock, MockProxy } from 'jest-mock-extended'
 import { UploadFile, UUIDGenerator } from '@/domain/contracts/gateways'
 import { setupChangeProfilePicture, ChangeProfilePicture } from '@/domain/usecases'
-import { SaveUserPicture } from '@/domain/contracts/repos'
+import { SaveUserPicture, LoadUserProfile } from '@/domain/contracts/repos'
 
 describe('ChangeProfilePicture', () => {
   let uuid: string
   let file: Buffer
   let fileStorage: MockProxy<UploadFile>
   let crypto: MockProxy<UUIDGenerator>
-  let userProfileRepo: MockProxy<SaveUserPicture>
+  let userProfileRepo: MockProxy<SaveUserPicture & LoadUserProfile>
   let sut: ChangeProfilePicture
 
   beforeAll(() => {
@@ -46,5 +46,11 @@ describe('ChangeProfilePicture', () => {
     await sut({ userId: 'any_user_id', file: undefined })
     expect(userProfileRepo.savePicture).toHaveBeenCalledWith({ pictureUrl: undefined })
     expect(userProfileRepo.savePicture).toHaveBeenCalledTimes(1)
+  })
+
+  it('should call LoadUserPicture with correct input', async () => {
+    await sut({ userId: 'any_user_id', file: undefined })
+    expect(userProfileRepo.load).toHaveBeenCalledWith({ id: 'any_user_id' })
+    expect(userProfileRepo.load).toHaveBeenCalledTimes(1)
   })
 })
