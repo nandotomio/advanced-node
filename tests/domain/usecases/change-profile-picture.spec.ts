@@ -75,8 +75,16 @@ describe('ChangeProfilePicture', () => {
 
   it('should call DeleteFile if file exists and SaveUserPicture throws', async () => {
     userProfileRepo.savePicture.mockRejectedValueOnce(new Error())
-    await sut({ userId: 'any_user_id', file })
+    const promise = sut({ userId: 'any_user_id', file })
+    await expect(promise).rejects.toThrow()
     expect(fileStorage.delete).toHaveBeenCalledWith({ key: uuid })
     expect(fileStorage.delete).toHaveBeenCalledTimes(1)
+  })
+
+  it('should not call DeleteFile if file does not exists and SaveUserPicture throws', async () => {
+    userProfileRepo.savePicture.mockRejectedValueOnce(new Error())
+    const promise = sut({ userId: 'any_user_id', file: undefined })
+    await expect(promise).rejects.toThrow()
+    expect(fileStorage.delete).not.toHaveBeenCalled()
   })
 })
