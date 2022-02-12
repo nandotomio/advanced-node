@@ -3,6 +3,7 @@ import { ValidationComposite, Validator } from '@/application/validation'
 
 export abstract class Controller {
   abstract perform (httpRequest: any): Promise<HttpResponse>
+
   buildValidators (httpRequest: any): Validator[] {
     return []
   }
