@@ -48,11 +48,31 @@ describe('User Routes', () => {
   })
 
   describe('PUT /users/picture', () => {
+    const uploadSpy = jest.fn()
+
+    jest.mock('@/infra/gateways/aws-s3-file-storage', () => ({
+      AwsS3FileStorage: jest.fn().mockReturnValue({ upload: uploadSpy })
+    }))
+
     it('should return 403 if no authorization header is present', async () => {
       const { statusCode } = await request(app)
         .put('/api/users/picture')
 
       expect(statusCode).toBe(403)
+    })
+
+    it('should return 200 with valid data', async () => {
+      uploadSpy.mockResolvedValueOnce('any_url')
+      const { id } = await pgUserRepo.save({ email: 'any_email', name: 'any_name' })
+      const authorization = sign({ key: id }, env.jwtSecret)
+
+      const { statusCode, body } = await request(app)
+        .put('/api/users/picture')
+        .set({ authorization })
+        .attach('picture', Buffer.from('any_buffer'), { filename: 'any_name', contentType: 'image/png' })
+
+      expect(statusCode).toBe(200)
+      expect(body).toEqual({ pictureUrl: 'any_url', initials: undefined })
     })
   })
 })
