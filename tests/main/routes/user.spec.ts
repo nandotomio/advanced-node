@@ -34,16 +34,16 @@ describe('User Routes', () => {
       expect(statusCode).toBe(403)
     })
 
-    it('should return 204', async () => {
-      const { id } = await pgUserRepo.save({ email: 'any_email' })
+    it('should return 200 with valid data', async () => {
+      const { id } = await pgUserRepo.save({ email: 'any_email', name: 'Fernando Tomio' })
       const authorization = sign({ key: id }, env.jwtSecret)
 
       const { statusCode, body } = await request(app)
         .delete('/api/users/picture')
         .set({ authorization })
 
-      expect(statusCode).toBe(204)
-      expect(body).toEqual({})
+      expect(statusCode).toBe(200)
+      expect(body).toEqual({ pictureUrl: undefined, initials: 'FT' })
     })
   })
 })
