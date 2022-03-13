@@ -1,13 +1,15 @@
 import { ConnectionOptions } from 'typeorm'
 
-export const pgConnection: ConnectionOptions = {
+const projectRootDir = process.env.TS_NODE_DEV === undefined ? 'dist' : 'src'
+
+const pgConnection: ConnectionOptions = {
   type: 'postgres',
   host: process.env.DB_HOST ?? '',
   port: 5432,
   username: '',
   password: '',
   database: '',
-  entities: ['dist/infra/postgres/entities/index.ts']
+  entities: [`${projectRootDir}/infra/repos/postgres/entities/index.{js,ts}`]
 }
 
 export const env = {
