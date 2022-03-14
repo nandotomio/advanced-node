@@ -21,10 +21,11 @@ class DbTransactionController {
     try {
       const httpResponse = await this.decoratee.perform(httpRequest)
       await this.db.commitTransaction()
-      await this.db.closeTransaction()
       return httpResponse
-    } catch {
+    } catch (error) {
       await this.db.rollbackTransaction()
+      throw error
+    } finally {
       await this.db.closeTransaction()
     }
   }
@@ -71,18 +72,24 @@ describe('DbTransactionController', () => {
 
   it('should call rollbackTransaction and closeTransaction on failure', async () => {
     decoratee.perform.mockRejectedValueOnce(new Error('decoratee_error'))
-    await sut.perform({ any: 'any' })
-
-    expect(db.commitTransaction).not.toHaveBeenCalled()
-    expect(db.rollbackTransaction).toHaveBeenCalledWith()
-    expect(db.rollbackTransaction).toHaveBeenCalledTimes(1)
-    expect(db.closeTransaction).toHaveBeenCalledWith()
-    expect(db.closeTransaction).toHaveBeenCalledTimes(1)
+    sut.perform({ any: 'any' }).catch(() => {
+      expect(db.commitTransaction).not.toHaveBeenCalled()
+      expect(db.rollbackTransaction).toHaveBeenCalledWith()
+      expect(db.rollbackTransaction).toHaveBeenCalledTimes(1)
+      expect(db.closeTransaction).toHaveBeenCalledWith()
+      expect(db.closeTransaction).toHaveBeenCalledTimes(1)
+    })
   })
 
   it('should return same result as decoratee on success', async () => {
     const httpResponse = await sut.perform({ any: 'any' })
-
     expect(httpResponse).toEqual({ statusCode: 204, data: null })
+  })
+
+  it('should rethrow if decoratee throws', async () => {
+    const error = new Error('decoratee_error')
+    decoratee.perform.mockRejectedValueOnce(error)
+    const promise = sut.perform({ any: 'any' })
+    await expect(promise).rejects.toThrow(error)
   })
 })
