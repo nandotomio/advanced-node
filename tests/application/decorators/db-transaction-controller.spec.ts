@@ -4,6 +4,8 @@ import { mock, MockProxy } from 'jest-mock-extended'
 
 interface DbTransaction {
   openTransaction: () => Promise<void>
+  closeTransaction: () => Promise<void>
+  commitTransaction: () => Promise<void>
 }
 
 class DbTransactionController {
@@ -15,6 +17,8 @@ class DbTransactionController {
   async perform (httpRequest: any): Promise<void> {
     await this.db.openTransaction()
     await this.decoratee.perform(httpRequest)
+    await this.db.commitTransaction()
+    await this.db.closeTransaction()
   }
 }
 
@@ -44,5 +48,14 @@ describe('DbTransactionController', () => {
 
     expect(decoratee.perform).toHaveBeenCalledWith({ any: 'any' })
     expect(decoratee.perform).toHaveBeenCalledTimes(1)
+  })
+
+  it('should call commitTransaction and closeTransaction on success', async () => {
+    await sut.perform({ any: 'any' })
+
+    expect(db.commitTransaction).toHaveBeenCalledWith()
+    expect(db.commitTransaction).toHaveBeenCalledTimes(1)
+    expect(db.closeTransaction).toHaveBeenCalledWith()
+    expect(db.closeTransaction).toHaveBeenCalledTimes(1)
   })
 })
