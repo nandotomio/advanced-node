@@ -10,8 +10,7 @@ export class AllowedMimeTypes {
 
   validate (): Error | undefined {
     let isValid = false
-    if (this.isPng()) isValid = true
-    else if (this.isJpg()) isValid = true
+    if (this.isPng() || this.isJpg()) isValid = true
     if (!isValid) return new InvalidMimeTypeError(this.allowed)
   }
 
