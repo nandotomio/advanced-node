@@ -35,7 +35,11 @@ describe('MulterAdapter', () => {
   it('should call single upload with correct input', () => {
     sut(req, res, next)
 
-    expect(multerSpy).toHaveBeenCalledWith()
+    expect(multerSpy).toHaveBeenCalledWith({
+      limits: {
+        fileSize: 8000000
+      }
+    })
     expect(multerSpy).toHaveBeenCalledTimes(1)
     expect(singleSpy).toHaveBeenCalledWith('picture')
     expect(singleSpy).toHaveBeenCalledTimes(1)
